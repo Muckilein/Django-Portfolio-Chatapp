@@ -1,0 +1,57 @@
+
+{% extends "base.html" %} 
+{% block content %}
+       {% if request.user.is_authenticated %}
+       <div id = "messageContainer">
+       {% for message in messages %}
+        <div>[{{message.created_at}}] {{message.author.first_name}} {{message.text}}</div>
+        {% endfor %}
+       </div>
+
+        <script>
+         async function sendMessage(){
+            let messageField = document.getElementById('messageField').value
+            let fd= new FormData();
+            let token = '{{csrf_token}}';
+            fd.append('textmessage',messageField);
+            fd.append('csrfmiddlewaretoken',token);           
+            try{ 
+              let messContainer = document.getElementById('messageContainer');
+              messContainer.innerHTML +=` <div id="deleteMessage" style="color:grey">[Datum] {{request.user.first_name}}: <i>${messageField}</i></div>`;
+              let response = await fetch('/chat/',{
+              method : 'POST',
+              body : fd
+            });
+            let jsonResponse = await  response.json();
+            let jsonObject = JSON.parse(jsonResponse)
+            console.log(jsonObject);
+            document.getElementById('deleteMessage').remove();           
+            messContainer.innerHTML +=` <div>[${jsonObject.fields.created_at}] {{request.user.first_name}}: <i>${jsonObject.fields.text}</i></div>`;
+            console.log('Success!');
+            
+          }
+            catch(err){
+              console.log(err);
+            }
+            }
+          
+          
+        </script>
+        <form onsubmit="sendMessage();return false;" method="POST">
+            {% csrf_token %}
+            {% comment %} action: wohin wir etwas senden wollen {% endcomment %}
+            <div class="mdl-textfield mdl-js-textfield">
+              <input class="mdl-textfield__input" name="textmessage" type="text" id="messageField">
+              <label class="mdl-textfield__label" for="messageField">Text...</label>
+            </div>
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+                Button
+            </button>
+          </form>        
+         {% endif %}                  
+{% endblock content %}   
+
+{% block headline %}
+Wilkommen
+{% endblock headline %}
+  

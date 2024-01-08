@@ -1,0 +1,21 @@
+
+{% extends "base.html" %} 
+{% block content %}
+
+
+<form action="/register/" method="POST">
+    {% csrf_token %}
+    <input name="redirect" type="hidden" value="{{redirect}}">
+    Username:
+    <div><input name="username" type="text"></div>
+    Passswort:
+    <div><input name="password" type="password"></div>
+    Passwort bestätigen:
+    <div><input name="password2" type="password"></div>
+    <div><button style="margin-top:25px">Login</button></div>
+</form>
+{% endblock content %}
+
+{% block headline %}
+Wilkommen
+{% endblock headline %}

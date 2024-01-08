@@ -1,0 +1,21 @@
+
+
+{% extends "base.html" %} 
+{% block content %}
+
+{% if wrongpassword %}
+<p>Benutzername oder Password ist falsch</p>
+{% endif %}
+
+<form action="/login/" method="POST">
+    {% csrf_token %}
+    <input name="redirect" type="hidden" value="{{redirect}}">
+    <div><input name="username" type="text"></div>
+    <div><input name="password" type="password"></div>
+    <div><button>Login</button></div>
+</form>
+{% endblock content %}
+
+{% block headline %}
+Wilkommen
+{% endblock headline %}
