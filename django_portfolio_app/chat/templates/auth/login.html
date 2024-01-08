@@ -9,10 +9,14 @@
 
 <form action="/login/" method="POST">
     {% csrf_token %}
-    <input name="redirect" type="hidden" value="{{redirect}}">
-    <div><input name="username" type="text"></div>
-    <div><input name="password" type="password"></div>
-    <div><button>Login</button></div>
+    <input  name="redirect" type="hidden" value="{{redirect}}">
+    Username:
+    <div><input class="mdl-textfield__input width300 maBot25" name="username" type="text"></div>
+    Password:
+    <div><input class="mdl-textfield__input width300 maBot25" name="password" type="password"></div>
+    <button  class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+        Login
+    </button>
 </form>
 {% endblock content %}
 

@@ -33,8 +33,27 @@
             catch(err){
               console.log(err);
             }
+            }            
+
+            async function  printUser(){
+              try{               
+              let response = await fetch('/json/')
+              let jsonResponse = await  response.json();
+              console.log("User");
+              console.log(jsonResponse);
+              let uList = []
+              jsonResponse.users.forEach((us)=>{
+                uList.push(JSON.parse(us)); 
+              }); 
+              console.log(uList);   
+             // let jsonObject = JSON.parse(jsonResponse);
+             // console.log("User");
+             // console.log(jsonObject);         
+              }
+              catch(err){
+                console.log(err);
+              }
             }
-          
           
         </script>
         <form onsubmit="sendMessage();return false;" method="POST">
@@ -47,7 +66,12 @@
             <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
                 Button
             </button>
-          </form>        
+            {% comment %} <div>{{username}}</div> {% endcomment %}
+          </form>  
+          <button onclick="printUser()" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+            Print User
+        </button>
+
          {% endif %}                  
 {% endblock content %}   
 

@@ -19,10 +19,12 @@ from django.urls import path
 from chat.views import index
 from chat.views import loginView
 from chat.views import registerView
+from chat.views import jsonView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('chat/', index),
     path('login/', loginView),
     path('register/', registerView),
+    path('json/',jsonView),
 ]

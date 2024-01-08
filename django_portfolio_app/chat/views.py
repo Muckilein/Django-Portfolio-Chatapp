@@ -7,10 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.core import serializers
+from django.contrib.auth import get_user_model
 
 # Create your views here.
 @login_required(login_url='/login/')
-def index(request):
+def index(request):   
     if request.method =="POST":
         print('received data ' + request.POST['textmessage'])
         myChat = Chat.objects.get(id=1)
@@ -18,7 +19,7 @@ def index(request):
         serializedObj = serializers.serialize('json',[newMessage,])
         return JsonResponse(serializedObj[1:-1],safe=False)
     chatMessages = Message.objects.filter(chat__id=1)
-    return render(request,'chat/index.html',{'username':'Julia','messages':chatMessages})#schaut automatisch im templates Ordner
+    return render(request,'chat/index.html',{'username':request.user,'messages':chatMessages})#schaut automatisch im templates Ordner
 
 def loginView(request):
     redirect = request.GET.get('next')
@@ -54,4 +55,23 @@ def registerView(request):
         else:
              print('passwords are not equal')
      return render(request,'auth/register.html')
+
+def jsonView(request):
+    user =  User.objects.get(id=1)
+    # allUsers = list( User.objects.values())
+    allUsers=User.objects.all()
+    # print(allUsers[0]) 
+    print(type(allUsers[0]))
+    print(type(user))
+    listUser =[]   
+    for allU in allUsers:
+        # listUser.append(allU['first_name']) 
+        # print(allU)  
+        listUser.append(serializers.serialize('json',[allU,])[1:-1])        
+       
+    # serializedObj = serializers.serialize('json',[listUser,]) 
+    # serializedUser= serializers.serialize('json',[user,])[1:-1]
+    return JsonResponse({"users":listUser},safe=False)
+    
+    
  
