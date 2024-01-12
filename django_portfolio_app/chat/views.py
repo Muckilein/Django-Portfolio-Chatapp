@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import Message
 from .models import Chat
+from .functions import *
 from django.contrib.auth import authenticate,login
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
@@ -8,18 +9,34 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.core import serializers
 from django.contrib.auth import get_user_model
+from django.db.models.fields import DateField
+from datetime import date
+from django.db import models
+
+allUsers = []
+
 
 # Create your views here.
 @login_required(login_url='/login/')
-def index(request):   
+def index(request): 
+    print(type(request.user))
     if request.method =="POST":
-        print('received data ' + request.POST['textmessage'])
-        myChat = Chat.objects.get(id=1)
-        newMessage = Message.objects.create(text= request.POST['textmessage'], chat = myChat, author = request.user, receiver = request.user)
+        print('received data ' + request.POST['textmessage'])        
+        chatID = request.POST.get('chatID')
+        receiverID = request.POST['receiverID']
+        chatIDINT = int(chatID) 
+        print(type(chatID)) 
+        print('id ist ' + chatID)        
+        if chatIDINT == 0:           
+           myChat = Chat.objects.create()  
+        else:
+           print("else")
+           myChat = Chat.objects.get(id = chatID)
+        print("new Message")
+        newMessage = Message.objects.create(text= request.POST['textmessage'], chat = myChat, author = request.user, receiver = User.objects.get(id =receiverID ))
         serializedObj = serializers.serialize('json',[newMessage,])
-        return JsonResponse(serializedObj[1:-1],safe=False)
-    chatMessages = Message.objects.filter(chat__id=1)
-    return render(request,'chat/index.html',{'username':request.user,'messages':chatMessages})#schaut automatisch im templates Ordner
+        return JsonResponse(serializedObj[1:-1],safe=False)     
+    return render(request,'chat/index.html',{'username':request.user,'messages':[]})#schaut automatisch im templates Ordner
 
 def loginView(request):
     redirect = request.GET.get('next')
@@ -48,30 +65,33 @@ def registerView(request):
         print('pw', password)
         if password == password2:
            print('password are equal')
-           user = User.objects.create_user(username, "test@mail", password)
-        #    user.last_name = "Lennon"
-        #    user.save()
+           User.objects.create_user(username, "test@mail", password)       
            return HttpResponseRedirect('/login/')
         else:
              print('passwords are not equal')
      return render(request,'auth/register.html')
 
-def jsonView(request):
-    user =  User.objects.get(id=1)
-    # allUsers = list( User.objects.values())
-    allUsers=User.objects.all()
-    # print(allUsers[0]) 
-    print(type(allUsers[0]))
-    print(type(user))
-    listUser =[]   
-    for allU in allUsers:
-        # listUser.append(allU['first_name']) 
-        # print(allU)  
-        listUser.append(serializers.serialize('json',[allU,])[1:-1])        
-       
-    # serializedObj = serializers.serialize('json',[listUser,]) 
-    # serializedUser= serializers.serialize('json',[user,])[1:-1]
-    return JsonResponse({"users":listUser},safe=False)
+def allUser(request):    
+    listUser = getAllUser()     
+    return JsonResponse({"users":listUser},safe=False)   
+
+
+def chatList(request): 
+    authorID = request.user.id  
+    print("Call chatList", authorID)   
+    if request.method =="POST":      
+       reID = request.POST.get('receiverID')           
+       chatMessages = Message.objects.filter(receiver__id = reID , author__id = authorID) |  Message.objects.filter(receiver__id = authorID , author__id = reID)
+       chatMessages = chatMessages.order_by("pk")
+       messages =[]
+       for mes in chatMessages:
+         m= serializers.serialize('json',[mes,])[1:-1]          
+         messages.append(m)        
+    #    userList =  getAllUser();   
+       return JsonResponse({"messages":messages},safe=False)
+    print('weiter')   
+    return render(request,'chat/index.html')
+    
     
     
  

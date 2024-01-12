@@ -8,3 +8,25 @@
    .maBot25{
     margin-bottom: 25px;
    }
+
+   .demo-list-icon {
+    width: 300px;
+  }
+
+  #messageContainer{
+    min-height: 500px;
+  }
+
+  .message{
+    background-color: rgb(233, 215, 253);
+    padding:15px;
+    border-radius: 20px;
+    border-bottom-left-radius: 0px;
+    margin-bottom:20px;
+  }
+
+  .rightFlip{
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 0px;    
+    background-color: rgb(164, 124, 211);
+  }

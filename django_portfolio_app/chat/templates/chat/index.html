@@ -1,19 +1,42 @@
 
-{% extends "base.html" %} 
-{% block content %}
-       {% if request.user.is_authenticated %}
-       <div id = "messageContainer">
-       {% for message in messages %}
-        <div>[{{message.created_at}}] {{message.author.first_name}} {{message.text}}</div>
-        {% endfor %}
-       </div>
 
+{% extends "base.html" %}
+{% load static %} 
+<script type="text/javascript" src="{% static 'js/script.js' %}"></script>
+{% block content %}
+   
         <script>
+         let listeMess =[];
+         let userList =[];
+         let otherUserID = 0;
+         let chatID = 0;  
+         let activeUser; 
+         let empty = false;    
+        
+
+        loadAllUsers();
+
+        async function loadAllUsers(){
+          try{
+           
+            let response = await fetch('/users/');            
+            let jsonResponse = await response.json();                    
+            userList = getUserJson(jsonResponse);             
+            setTimeout(()=>{ activeUser = document.getElementById('activeUserID').value;},500);            ;
+            document.getElementById('userContainer').innerHTML = renderUserList(userList);
+          } catch(err){
+              console.log(err);
+            }
+
+        }
+
          async function sendMessage(){
             let messageField = document.getElementById('messageField').value
             let fd= new FormData();
             let token = '{{csrf_token}}';
             fd.append('textmessage',messageField);
+            fd.append('chatID',chatID);
+            fd.append('receiverID',otherUserID);
             fd.append('csrfmiddlewaretoken',token);           
             try{ 
               let messContainer = document.getElementById('messageContainer');
@@ -21,42 +44,93 @@
               let response = await fetch('/chat/',{
               method : 'POST',
               body : fd
-            });
+            });            
             let jsonResponse = await  response.json();
-            let jsonObject = JSON.parse(jsonResponse)
-            console.log(jsonObject);
-            document.getElementById('deleteMessage').remove();           
-            messContainer.innerHTML +=` <div>[${jsonObject.fields.created_at}] {{request.user.first_name}}: <i>${jsonObject.fields.text}</i></div>`;
+            let jsonObject = JSON.parse(jsonResponse);          
+            listeMess.push(jsonObject);            
+            chatID =  jsonObject.fields.chat;
+            document.getElementById('deleteMessage').remove(); 
+            let flip = isFlip(otherUserID,activeUserID,otherUserID);
+            if(empty){
+              messContainer.innerHTML = "";
+              empty = false;
+            }          
+            messContainer.innerHTML +=` <div class="message ${flip}">[${jsonObject.fields.created_at}] {{request.user.first_name}}: <i>${jsonObject.fields.text}</i></div>`;
             console.log('Success!');
-            
+            document.getElementById('messageField').value = "";
           }
             catch(err){
               console.log(err);
             }
-            }            
-
+            }
+            
+            async function getMessagWithUser(receiverId){
+              otherUserID = receiverId;           
+              let fd= new FormData();
+              let token = '{{csrf_token}}';
+              fd.append('receiverID',receiverId);
+              fd.append('csrfmiddlewaretoken',token);           
+              try{                
+               let response = await fetch('/chatList/',{
+               method : 'POST',
+               body : fd
+             });                 
+             let jsonResponse = await response.json();
+             let messContainer = document.getElementById('messageContainer');
+             if (jsonResponse.messages.length >0 )
+             {
+              empty = false; 
+              listeMess = getMessageJson(jsonResponse);
+              chatID =  listeMess[0].fields.chat;
+              let content = renderMessages(listeMess,userList,otherUserID) ;             
+              messContainer.innerHTML = ""; 
+              messContainer.innerHTML += content;
+              console.log(listeMess);                  
+            } else{ 
+              chatID=0;             
+              empty = true;
+              messContainer.innerHTML = "Noch keine Message vorhanden"; 
+            }         
+            }   catch(err){
+              console.log("Error occured");
+              console.log(err);
+            }
+          }  
+                              
             async function  printUser(){
               try{               
               let response = await fetch('/json/')
-              let jsonResponse = await  response.json();
-              console.log("User");
-              console.log(jsonResponse);
+              let jsonResponse = await  response.json();             
               let uList = []
               jsonResponse.users.forEach((us)=>{
                 uList.push(JSON.parse(us)); 
               }); 
-              console.log(uList);   
-             // let jsonObject = JSON.parse(jsonResponse);
-             // console.log("User");
-             // console.log(jsonObject);         
-              }
+              console.log(uList); 
+             }
               catch(err){
                 console.log(err);
               }
             }
+           
           
         </script>
-        <form onsubmit="sendMessage();return false;" method="POST">
+ {% if request.user.is_authenticated %}   
+ <div style="display:flex"> 
+  <input id="activeUserID" type="hidden" value="{{request.user.id}}">
+
+    <div style="display:flex" id="userContainer"></div>
+
+        <div style="">        
+           <div id = "messageContainer">
+            {% if messages.length > 0  %}
+               {% for message in messages %}
+               <div>[{{message.created_at}}] {{message.author.first_name}} {{message.text}}</div>
+               {% endfor %}   
+             {% else %}
+             <div>Bitte wählen sie einen Chat aus!</div>  
+            {% endif %} 
+           </div> 
+           <form onsubmit="sendMessage();return false;" method="POST">
             {% csrf_token %}
             {% comment %} action: wohin wir etwas senden wollen {% endcomment %}
             <div class="mdl-textfield mdl-js-textfield">
@@ -65,14 +139,14 @@
             </div>
             <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
                 Button
-            </button>
-            {% comment %} <div>{{username}}</div> {% endcomment %}
-          </form>  
-          <button onclick="printUser()" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
-            Print User
-        </button>
-
-         {% endif %}                  
+            </button>            
+          </form>           
+        </div>    
+   
+        
+</div>       
+  
+{% endif %}                  
 {% endblock content %}   
 
 {% block headline %}
