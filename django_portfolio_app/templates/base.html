@@ -10,23 +10,24 @@
 {% comment %} <script src="script.js"></script> {% endcomment %}
 
 </head>
-<body onload="init()">
+<body>
+  {% comment %} <body onload="init()"> {% endcomment %}
 
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
         <header class="mdl-layout__header">
           <div class="mdl-layout__header-row">
             {% comment %} Herzlich willkommen!           {% endcomment %}
-            {% block headline%}
-            {% endblock %}  
+          
             <!-- Add spacer, to align navigation to the right -->
             <div class="mdl-layout-spacer"></div>
             <!-- Navigation. We hide it in small screens. -->
-            <nav class="mdl-navigation mdl-layout--large-screen-only">
+             <nav class="mdl-navigation mdl-layout--large-screen-only">
+              <a class="mdl-navigation__link" onclick="userLogout()" href="">Logout</a>
+              {% comment %} onclick="userLogout()" {% endcomment %}
+             {% comment %} <a class="mdl-navigation__link" href="">Link</a>
               <a class="mdl-navigation__link" href="">Link</a>
-              <a class="mdl-navigation__link" href="">Link</a>
-              <a class="mdl-navigation__link" href="">Link</a>
-              <a class="mdl-navigation__link" href="">Link</a>
-            </nav>
+              <a class="mdl-navigation__link" href="">Link</a>  {% endcomment %}
+            </nav> 
           </div>
         </header>
         <div class="mdl-layout__drawer">

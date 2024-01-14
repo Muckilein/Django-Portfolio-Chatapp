@@ -8,6 +8,7 @@
         <script>
          let listeMess =[];
          let userList =[];
+         let lasChoosenuser=0;
          let otherUserID = 0;
          let chatID = 0;  
          let activeUser; 
@@ -29,15 +30,19 @@
             }
 
         }
+        function makeFormdata(messageF){
+          let fd= new FormData();
+          let token = '{{csrf_token}}';
+          fd.append('textmessage',messageF);
+          fd.append('chatID',chatID);
+          fd.append('receiverID',otherUserID);
+          fd.append('csrfmiddlewaretoken',token);
+          return fd;    
+        }
 
          async function sendMessage(){
-            let messageField = document.getElementById('messageField').value
-            let fd= new FormData();
-            let token = '{{csrf_token}}';
-            fd.append('textmessage',messageField);
-            fd.append('chatID',chatID);
-            fd.append('receiverID',otherUserID);
-            fd.append('csrfmiddlewaretoken',token);           
+            let messageField = document.getElementById('messageField').value;
+            let fd = makeFormdata(messageField);                   
             try{ 
               let messContainer = document.getElementById('messageContainer');
               messContainer.innerHTML +=` <div id="deleteMessage" style="color:grey">[Datum] {{request.user.first_name}}: <i>${messageField}</i></div>`;
@@ -65,6 +70,8 @@
             }
             
             async function getMessagWithUser(receiverId){
+              renderUserListStyle(receiverId,lasChoosenuser);             
+              lasChoosenuser = receiverId;
               otherUserID = receiverId;           
               let fd= new FormData();
               let token = '{{csrf_token}}';
@@ -149,7 +156,7 @@
 {% endif %}                  
 {% endblock content %}   
 
-{% block headline %}
-Wilkommen
+{% comment %} {% block headline %}
+Willkommen!
 {% endblock headline %}
-  
+   {% endcomment %}
